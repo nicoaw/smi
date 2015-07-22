@@ -1,7 +1,7 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include "Number.hpp"
+#include "Real.hpp"
 #include <iostream>
 
 struct Token
@@ -13,8 +13,8 @@ struct Token
 		LeftParenthesis,
 		Minus,
 		Mod,
-		Number,
 		Plus,
+		Real,
 		RightParenthesis,
 		Slash,
 	};
@@ -23,7 +23,7 @@ struct Token
 
 	union
 	{
-		Number number;
+		Real real;
 	};
 };
 

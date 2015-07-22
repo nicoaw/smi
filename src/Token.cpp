@@ -5,7 +5,7 @@ using namespace std;
 istream& operator>>(istream& is, Token& token)
 {
 	char c;
-	is.get(c);
+	is >> c;
 
 	switch(c)
 	{
@@ -44,11 +44,11 @@ istream& operator>>(istream& is, Token& token)
 		case '8':
 		case '9':
 			is.putback(c);
-
-			is >> token.number;
-			token.type = Token::Type::Number;
+			is >> token.real;
+			token.type = Token::Type::Real;
 			break;
-			//default error
+		default:
+			is.setstate(ios::failbit);
 	}
 
 	return is;
