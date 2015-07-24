@@ -10,9 +10,11 @@ struct Token
 	{
 		Asterix,
 		Caret,
+		Equals,
 		LeftParenthesis,
 		Minus,
 		Mod,
+		Name,
 		Plus,
 		Real,
 		RightParenthesis,
@@ -21,10 +23,8 @@ struct Token
 
 	Type type;
 
-	union
-	{
-		Real real;
-	};
+	Real real;
+	std::string name;
 };
 
 std::istream& operator>>(std::istream& is, Token& token);

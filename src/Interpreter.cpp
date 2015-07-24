@@ -43,6 +43,7 @@ Real Interpreter::expr(bool next)
 
 Real Interpreter::interpret(const std::string& expression)
 {
+	iss.clear();
 	iss.str(expression);
 	it = {iss};
 	skipws(iss);	
@@ -57,6 +58,16 @@ Real Interpreter::prim(bool next)
 
 	switch(it->type)
 	{
+		case Token::Type::Name:
+			{
+				Real& value = memory[it->name];
+				++it;
+
+				if(it->type == Token::Type::Equals)
+					value = expr(true);
+
+				return value;
+			}
 		case Token::Type::Real:
 			{
 				Real num = it->real;
@@ -68,17 +79,22 @@ Real Interpreter::prim(bool next)
 		case Token::Type::LeftParenthesis:
 			{
 				Real num = expr(true);
-				++it;
 
 				if(it->type != Token::Type::RightParenthesis)
-					throw invalid_argument{"left parenthesis expected"};
+					throw invalid_argument{"right parenthesis expected"};
 
+				++it;
 				return num;
 			}
 		default:
 			throw invalid_argument{"primary expected"};
 			break;
 	}
+}
+
+void Interpreter::setValue(const std::string& name, Real value)
+{
+	memory[name] = value;
 }
 
 Real Interpreter::term(bool next)

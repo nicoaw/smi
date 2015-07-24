@@ -3,12 +3,15 @@
 
 #include "Token.hpp"
 #include <iterator>
+#include <map>
 #include <sstream>
 
 class Interpreter
 {
 	public:
 		Real interpret(const std::string& expression);
+
+		void setValue(const std::string& name, Real value);
 
 	private:
 		Real exp(bool next);
@@ -21,6 +24,7 @@ class Interpreter
 
 		std::istringstream iss;	
 		std::istream_iterator<Token> it;
+		std::map<std::string, Real> memory;
 };
 
 #endif /* INTERPRETER_HPP */
