@@ -24,7 +24,7 @@ class Interpreter
 
 		std::istringstream iss;	
 		std::istream_iterator<Token> it;
-		std::map<std::string, Real> memory;
+		std::map<std::string, Real> constants;
 };
 
 #endif /* INTERPRETER_HPP */

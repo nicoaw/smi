@@ -60,7 +60,7 @@ Real Interpreter::prim(bool next)
 	{
 		case Token::Type::Name:
 			{
-				Real& value = memory[it->name];
+				Real& value = constants[it->name];
 				++it;
 
 				if(it->type == Token::Type::Equals)
@@ -94,7 +94,7 @@ Real Interpreter::prim(bool next)
 
 void Interpreter::setValue(const std::string& name, Real value)
 {
-	memory[name] = value;
+	constants[name] = value;
 }
 
 Real Interpreter::term(bool next)
