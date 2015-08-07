@@ -7,13 +7,13 @@ unsigned int Token::getPrecedence(Token::Type type)
 {
 	static map<Token::Type, int> precedences
 	{
+		{ Token::Type::Minus, 0 },
+		{ Token::Type::ExclamationPoint, 0 },
 		{ Token::Type::Caret, 0 },
-		{ Token::Type::ExclamationPoint, 1 },
 		{ Token::Type::Asterix, 2 },
 		{ Token::Type::Slash, 2 },
 		{ Token::Type::Mod, 2 },
 		{ Token::Type::Plus, 3 },
-		{ Token::Type::Minus, 3 },
 		{ Token::Type::Equals, 4 },
 	};
 

@@ -1,3 +1,4 @@
+#include "Debug.hpp"
 #include "Evaluate.hpp"
 #include <cmath>
 #include <stack>
@@ -29,6 +30,10 @@ Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 		operands.pop();
 		return temp;
 	};
+
+	for(const Token& token : tokens)
+		printToken(token);
+	cout << endl;
 
 	for(const Token& token : tokens)
 	{

@@ -2,6 +2,8 @@
 #include <stack>
 
 using namespace std;
+	
+bool comparePrecedence(const Token& lhs, const Token& rhs);
 
 void postfix(vector<Token>& tokens)
 {
@@ -12,10 +14,6 @@ void postfix(vector<Token>& tokens)
 		auto temp = operators.top();
 		operators.pop();
 		return temp;
-	};
-	auto comparePrecedence = [](const Token& lhs, const Token& rhs)
-	{
-		return Token::getPrecedence(lhs.type) <= Token::getPrecedence(rhs.type);
 	};
 
 	for(const Token& token : tokens)
@@ -46,4 +44,9 @@ void postfix(vector<Token>& tokens)
 		*(position++) = pop();
 
 	tokens.erase(position, tokens.end());
+}
+
+bool comparePrecedence(const Token& lhs, const Token& rhs)
+{
+	return Token::getPrecedence(lhs.type) < Token::getPrecedence(rhs.type);
 }

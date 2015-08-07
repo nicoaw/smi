@@ -15,6 +15,9 @@ void printToken(const Token& token)
 		case Token::Type::Equals:
 			cout << "=";
 			break;
+		case Token::Type::ExclamationPoint:
+			cout << "!";
+			break;
 		case Token::Type::LeftParenthesis:
 			cout << "(";
 			break;
