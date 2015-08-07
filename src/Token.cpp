@@ -1,6 +1,40 @@
 #include "Token.hpp"
+#include <map>
 
 using namespace std;
+
+unsigned int Token::getPrecedence(Token::Type type)
+{
+	static map<Token::Type, int> precedences
+	{
+		{ Token::Type::Caret, 1 },
+		{ Token::Type::Asterix, 2 },
+		{ Token::Type::Slash, 2 },
+		{ Token::Type::Mod, 2 },
+		{ Token::Type::Plus, 3 },
+		{ Token::Type::Minus, 3 },
+		{ Token::Type::Equals, 4 },
+		{ Token::Type::LeftParenthesis, 5 },
+		{ Token::Type::RightParenthesis, 5 },
+	};
+
+	auto position = precedences.find(type);
+	
+	if(position != precedences.end())
+		return position->second;
+	else
+		throw std::runtime_error{"Unable to determine token precedence"};
+}
+
+bool Token::isOperand(const Token& token)
+{
+	return token.type == Token::Type::Name || token.type == Token::Type::Real;
+}
+
+bool Token::isOperator(const Token& token)
+{
+	return !isOperand(token);
+}
 
 istream& operator>>(istream& is, Token& token)
 {
@@ -15,16 +49,10 @@ istream& operator>>(istream& is, Token& token)
 	}
 	else if(isalpha(c))
 	{
-		token.type = Token::Type::Name;
-
-		token.name.clear();
-		do
-		{
-			token.name.push_back(c);
-			c = is.get();
-		}
-		while(isalpha(c) || isdigit(c));
-		is.putback(c);
+		token.type = Token::Type::Name;	
+		token.name = c;
+		while(is.peek() != EOF && (isalpha(is.peek()) || isdigit(is.peek())))
+			token.name.push_back(is.get());
 	}
 	else
 	{
@@ -64,4 +92,3 @@ istream& operator>>(istream& is, Token& token)
 
 	return is;
 }
-

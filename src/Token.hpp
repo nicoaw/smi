@@ -21,6 +21,12 @@ struct Token
 		Slash,
 	};
 
+	static unsigned int getPrecedence(Token::Type type);
+
+	static bool isOperand(const Token& token);
+
+	static bool isOperator(const Token& token);
+
 	Type type;
 
 	Real real;

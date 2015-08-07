@@ -1,40 +1,49 @@
-#include "Interpreter.hpp"
-#include <iostream>
+#include "Evaluate.hpp"
+#include "Form.hpp"
+#include <iterator>
+#include <sstream>
 
 using namespace std;
+
+Real interpret(map<string, Real>& memory, const string& expression);
 
 bool promptInput(string& input);
 
 int main(int argc, char* argv[])
 {
-	Interpreter interpreter;
-	interpreter.setValue("pi", 3.14159f);
+	map<string, Real> memory
+	{
+		{ "pi", 3.14159f }
+	};
 
-	if(argc == 1)
+	try
 	{
-		string input;
-		while(promptInput(input))
+		if(argc == 1)
 		{
-			Real ans = interpreter.interpret(input);
-			interpreter.setValue("ans", ans);
-			cout << "ans = " << ans << endl;
-		}
-	}	
-	if(argc == 2)
-	{
-		try
-		{
-			cout << interpreter.interpret(argv[1]) << endl;
-		}
-		catch(exception& e)
-		{
-			cout << "Error: " << e.what() << endl;
-		}
+			string input;
+			while(promptInput(input))
+				cout << interpret(memory, input) << endl;
+		}	
+		if(argc == 2)
+			cout << interpret(memory, argv[1]) << endl;
+		else
+			cout << "You must supply an expression (i.e. smi 2+2)" << endl;
 	}
-	else
-		cout << "You must supply an expression (i.e. smi 2+2)" << endl;
+	catch(exception& e)
+	{
+		cout << "Error: " << e.what() << endl;
+	}
 
 	return 0;
+}
+
+Real interpret(map<string, Real>& memory, const string& expression)
+{
+	istringstream iss{expression};
+	vector<Token> tokens;
+	copy(istream_iterator<Token>{iss}, istream_iterator<Token>{}, back_inserter(tokens));
+	postfix(tokens);
+	return evaluate(memory, tokens);
 }
 
 bool promptInput(string& input)
