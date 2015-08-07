@@ -11,6 +11,7 @@ struct Token
 		Asterix,
 		Caret,
 		Equals,
+		ExclamationPoint,
 		LeftParenthesis,
 		Minus,
 		Mod,

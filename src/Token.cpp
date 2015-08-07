@@ -7,7 +7,8 @@ unsigned int Token::getPrecedence(Token::Type type)
 {
 	static map<Token::Type, int> precedences
 	{
-		{ Token::Type::Caret, 1 },
+		{ Token::Type::Caret, 0 },
+		{ Token::Type::ExclamationPoint, 1 },
 		{ Token::Type::Asterix, 2 },
 		{ Token::Type::Slash, 2 },
 		{ Token::Type::Mod, 2 },
@@ -64,6 +65,9 @@ istream& operator>>(istream& is, Token& token)
 				break;
 			case '=':
 				token.type = Token::Type::Equals;
+				break;
+			case '!':
+				token.type = Token::Type::ExclamationPoint;
 				break;
 			case '(':
 				token.type = Token::Type::LeftParenthesis;

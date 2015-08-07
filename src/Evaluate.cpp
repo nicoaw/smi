@@ -17,6 +17,8 @@ struct Operand
 	Real real;
 };
 
+static Real factorial(Real x);
+
 Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 {
 	stack<Operand> operands;
@@ -44,6 +46,9 @@ Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 				rhs = pop();
 				operands.top().real = rhs.real;
 				memory[operands.top().name] = operands.top().real;
+				break;
+			case Token::Type::ExclamationPoint:
+				operands.top().real = factorial(operands.top().real);
 				break;
 			case Token::Type::Minus:
 				rhs = pop();
@@ -73,4 +78,14 @@ Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 	}
 
 	return operands.top().real;
+}
+
+static Real factorial(Real x)
+{
+	Real result = x;
+	while(x > 1.0)
+		result *= (x -= 1.0);
+
+	return result;
+
 }
