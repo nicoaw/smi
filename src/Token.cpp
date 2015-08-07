@@ -14,8 +14,6 @@ unsigned int Token::getPrecedence(Token::Type type)
 		{ Token::Type::Plus, 3 },
 		{ Token::Type::Minus, 3 },
 		{ Token::Type::Equals, 4 },
-		{ Token::Type::LeftParenthesis, 5 },
-		{ Token::Type::RightParenthesis, 5 },
 	};
 
 	auto position = precedences.find(type);

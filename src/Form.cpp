@@ -15,7 +15,7 @@ void postfix(vector<Token>& tokens)
 	};
 	auto comparePrecedence = [](const Token& lhs, const Token& rhs)
 	{
-		return Token::getPrecedence(lhs.type) < Token::getPrecedence(rhs.type);
+		return Token::getPrecedence(lhs.type) <= Token::getPrecedence(rhs.type);
 	};
 
 	for(const Token& token : tokens)
@@ -27,15 +27,12 @@ void postfix(vector<Token>& tokens)
 				while(operators.top().type != Token::Type::LeftParenthesis)
 					*(position++) = pop();
 
-				if(operators.top().type != Token::Type::LeftParenthesis)
-					throw runtime_error{"Expected left parenthesis"};
-
 				operators.pop();	
 			}
 			else
 			{
 				if(token.type != Token::Type::LeftParenthesis)
-					while(!operators.empty() && !comparePrecedence(token, operators.top()))
+					while(!operators.empty() && operators.top().type != Token::Type::LeftParenthesis && !comparePrecedence(token, operators.top()))
 						*(position++) = pop();
 
 				operators.push(token);

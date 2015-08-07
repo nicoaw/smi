@@ -4,10 +4,23 @@
 
 using namespace std;
 
+struct Operand
+{
+	enum class Type
+	{
+		Name,
+		Real,
+	};
+
+	Type type;
+	string name;
+	Real real;
+};
+
 Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 {
-	stack<Real> operands;
-	Real rhs;
+	stack<Operand> operands;
+	Operand rhs;
 	auto pop = [&operands]()
 	{
 		auto temp = operands.top();
@@ -21,40 +34,43 @@ Real evaluate(map<string, Real>& memory, const std::vector<Token>& tokens)
 		{
 			case Token::Type::Asterix:
 				rhs = pop();
-				operands.top() *= rhs;
+				operands.top().real *= rhs.real;
 				break;
 			case Token::Type::Caret:
 				rhs = pop();
-				operands.top() = pow(operands.top(), rhs);
+				operands.top().real = pow(operands.top().real, rhs.real);
 				break;
 			case Token::Type::Equals:
+				rhs = pop();
+				operands.top().real = rhs.real;
+				memory[operands.top().name] = operands.top().real;
 				break;
 			case Token::Type::Minus:
 				rhs = pop();
-				operands.top() -= rhs;
+				operands.top().real -= rhs.real;
 				break;
 			case Token::Type::Mod:
 				rhs = pop();
-				operands.top() = fmod(operands.top(), rhs);
+				operands.top().real = fmod(operands.top().real, rhs.real);
 				break;
 			case Token::Type::Name:
-				operands.push(memory[token.name]);
+				operands.push(Operand{Operand::Type::Name, token.name, memory[token.name]});
 				break;
 			case Token::Type::Plus:
 				rhs = pop();
-				operands.top() += rhs;
+				operands.top().real += rhs.real;
 				break;
 			case Token::Type::Real:
-				operands.push(token.real);
+				operands.push(Operand{Operand::Type::Real, "", token.real});
 				break;
 			case Token::Type::Slash:
 				rhs = pop();
-				operands.top() /= rhs;
+				operands.top().real /= rhs.real;
 				break;
 			default:
 				throw runtime_error{"Unexpected token"};
 		}
 	}
 
-	return operands.top();
+	return operands.top().real;
 }
