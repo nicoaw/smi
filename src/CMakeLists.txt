@@ -1,7 +1,7 @@
 cmake_minimum_required(VERSION 2.6)
 project(SMI)
 
-list(APPEND CMAKE_CXX_FLAGS "-std=c++1y")
+list(APPEND CMAKE_CXX_FLAGS "-std=c++1y -g")
 
 set(SMI_SOURCES
 	main.cpp

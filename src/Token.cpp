@@ -41,38 +41,37 @@ long double evaluate(const std::vector<Token>& tokens)
 				break;
 		}						
 	}
-	
+
 	return tokens.empty() ? 0 : operands.top();	
 }
 
 std::istream& operator>>(std::istream& is, Token& token)
 {
-	// Token is a number
-	if(isdigit(is.peek()))
+	token.type = Token::Type::Operator;
+	switch(is.get())
 	{
-		is >> token.num;
-		token.type = Token::Type::Operand;
+		case '*': token.op = Operator::Asterix; break;
+		case '^': token.op = Operator::Caret; break;
+		case '!': token.op = Operator::Exclamation; break;
+		case '(': token.op = Operator::LeftParenthesis; break;
+		case '-': token.op = Operator::Minus; break;
+		case '%': token.op = Operator::Percent; break;
+		case '+': token.op = Operator::Plus; break;
+		case ')': token.op = Operator::RightParenthesis; break;
+		case '/': token.op = Operator::Slash; break;
+				  // Not a valid token to extract
+		case '\n': is.setstate(std::ios::failbit); break;
+		default:
+				  is.unget();
+				  // Token is a number
+				  if(is >> token.num) token.type = Token::Type::Operand;
+				  is.clear();
+				  break;
 	}
-	// Token is an operator
-	else
-	{
-		switch(is.get())
-		{
-			case '*': token.op = Operator::Asterix; break;
-			case '^': token.op = Operator::Caret; break;
-			case '!': token.op = Operator::Exclamation; break;
-			case '(': token.op = Operator::LeftParenthesis; break;
-			case '-': token.op = Operator::Minus; break;
-			case '%': token.op = Operator::Percent; break;
-			case '+': token.op = Operator::Plus; break;
-			case ')': token.op = Operator::RightParenthesis; break;
-			case '/': token.op = Operator::Slash; break;
-					  // No valid Token can be extracted
-			default: is.setstate(std::ios::failbit); break;
-		}
 
-		token.type = Token::Type::Operator;
-	}
+	// Skip all white space except new lines
+	while(is.peek() == ' ' || is.peek() == '\t')
+		is.ignore();
 
 	return is;
 }
@@ -85,7 +84,7 @@ std::ostream& operator<<(std::ostream& os, const Token& token)
 		case Token::Type::Operand:
 			os << token.num;
 			break;
-		// Output operator
+			// Output operator
 		case Token::Type::Operator:
 			switch(token.op)
 			{
@@ -127,19 +126,19 @@ void postfix(std::vector<Token>& tokens)
 			case Token::Type::Operator:
 				switch(token.op)
 				{
-				case Operator::RightParenthesis:
-					// Push operators untill a left parenthesis
-					while(operators.top().op != Operator::LeftParenthesis)
-						*(result++) = popOperator();
-					operators.pop();
-					break;
-				case Operator::LeftParenthesis:
-					// Push operators untill there is no more, opertor is a left parenthesis, or operator is lower precedence compared to the current token
-					while(!operators.empty() && operators.top().op != Operator::LeftParenthesis && token.op >= operators.top().op)
-						*(result++) = popOperator();
-				default:
-					operators.push(token);
-					break;
+					case Operator::RightParenthesis:
+						// Push operators untill a left parenthesis
+						while(operators.top().op != Operator::LeftParenthesis)
+							*(result++) = popOperator();
+						operators.pop();
+						break;
+					case Operator::LeftParenthesis:
+						// Push operators untill there is no more, opertor is a left parenthesis, or operator is lower precedence compared to the current token
+						while(!operators.empty() && operators.top().op != Operator::LeftParenthesis && token.op >= operators.top().op)
+							*(result++) = popOperator();
+					default:
+						operators.push(token);
+						break;
 				}
 				break;
 		}

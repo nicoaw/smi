@@ -15,9 +15,9 @@ int main(int argc, char* argv[])
 
 void interpret(std::istream& is)
 {
-	std::skipws(is);
+	std::cout << ">> ";
 	std::vector<Token> tokens{std::istream_iterator<Token>{is}, std::istream_iterator<Token>{}};
-	std::cin.clear();
+	is.clear();
 
 	if(!tokens.empty())
 	{
