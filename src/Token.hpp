@@ -1,39 +1,30 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include "Real.hpp"
+#include "Operator.hpp"
 #include <iostream>
+#include <vector>
 
 struct Token
 {
 	enum class Type
 	{
-		Asterix,
-		Caret,
-		Equals,
-		ExclamationPoint,
-		LeftParenthesis,
-		Minus,
-		Mod,
-		Name,
-		Plus,
-		Real,
-		RightParenthesis,
-		Slash,
+		Operand,
+		Operator,
 	};
 
-	static unsigned int getPrecedence(Token::Type type);
-
-	static bool isOperand(const Token& token);
-
-	static bool isOperator(const Token& token);
-
 	Type type;
-
-	Real real;
-	std::string name;
+	
+	union
+	{
+		long double num;
+		Operator op;
+	};
 };
 
+long double evaluate(const std::vector<Token>& tokens);
 std::istream& operator>>(std::istream& is, Token& token);
+std::ostream& operator<<(std::ostream& is, const Token& token);
+void postfix(std::vector<Token>& tokens); // Convert to postfix notation
 
 #endif /* TOKEN_HPP */

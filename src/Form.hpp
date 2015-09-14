@@ -2,8 +2,8 @@
 #define FORM_HPP
 
 #include "Token.hpp"
-#include <vector>
 
-void postfix(std::vector<Token>& tokens);
+template<typename RandomAccessIterator, typename OutputIterator>
+void postfix(RandomAccessIterator first, RandomAccessIterator last, OutputIterator result);
 
 #endif /* FORM_HPP */
