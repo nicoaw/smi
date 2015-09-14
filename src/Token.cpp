@@ -42,7 +42,7 @@ long double evaluate(const std::vector<Token>& tokens)
 		}						
 	}
 	
-	return operands.top();	
+	return tokens.empty() ? 0 : operands.top();	
 }
 
 std::istream& operator>>(std::istream& is, Token& token)
