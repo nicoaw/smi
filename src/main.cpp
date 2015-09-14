@@ -1,5 +1,6 @@
-#include "Token.hpp"
+#include "Expression.hpp"
 #include <iterator>
+#include <limits>
 #include <sstream>
 
 void interpret(std::istream& is);
@@ -16,12 +17,18 @@ int main(int argc, char* argv[])
 void interpret(std::istream& is)
 {
 	std::cout << ">> ";
-	std::vector<Token> tokens{std::istream_iterator<Token>{is}, std::istream_iterator<Token>{}};
-	is.clear();
+	Expression expression;
+	is >> expression;
 
-	if(!tokens.empty())
+	if(!is)
 	{
-		postfix(tokens);
-		std::cout << evaluate(tokens) << std::endl;
+		is.clear();
+		is.ignore(std::numeric_limits<std::streamsize>::max(), '\n');
+	}
+
+	if(!expression.empty())
+	{
+		postfix(expression);
+		std::cout << evaluate(expression) << std::endl;
 	}
 }
