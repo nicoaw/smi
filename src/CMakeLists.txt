@@ -11,3 +11,4 @@ set(SMI_SOURCES
 	Token.hpp)
 
 add_executable(smi ${SMI_SOURCES})
+target_link_libraries(smi boost_program_options)
