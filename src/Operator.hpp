@@ -13,8 +13,8 @@ enum class Operator
 	Slash,
 	Percent,
 
-	Minus,
 	Plus,
+	Minus,
 };
 
 #endif /* OPERATOR_HPP */

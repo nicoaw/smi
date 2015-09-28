@@ -12,3 +12,4 @@ set(SMI_SOURCES
 
 add_executable(smi ${SMI_SOURCES})
 target_link_libraries(smi boost_program_options)
+install(TARGETS smi DESTINATION bin)

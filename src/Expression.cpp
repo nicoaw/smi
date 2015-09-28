@@ -144,11 +144,11 @@ void postfix(Expression& expression)
 							*(result++) = popOperator();
 						operators.pop();
 						break;
-					case Operator::LeftParenthesis:
+					default://case Operator::LeftParenthesis:
 						// Push operators untill there is no more, opertor is a left parenthesis, or operator is lower precedence compared to the current token
 						while(!operators.empty() && operators.top().op != Operator::LeftParenthesis && token.op >= operators.top().op)
 							*(result++) = popOperator();
-					default:
+					//default:
 						operators.push(token);
 						break;
 				}
