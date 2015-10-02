@@ -1,3 +1,0 @@
-* Crash (Seg fault) with "2 - "
-* Command options
-* More input options (ie. immediate, interpreter, file)
