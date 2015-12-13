@@ -1,22 +1,39 @@
 #ifndef TOKEN_HPP
 #define TOKEN_HPP
 
-#include "Operator.hpp"
+enum class Operator
+{
+	// Order determines precedence
+	LeftParenthesis,
+	RightParenthesis,
+	Equals,
+	Exclamation,
+	Caret,
+	Asterix,
+	Slash,
+	Percent,
+	Plus,
+	Minus,
+};
+
+using Value = long double;
 
 struct Token
 {
 	enum class Type
 	{
-		Operand,
+		Memory,
 		Operator,
+		Value,
 	};
 
 	Type type;
 	
 	union
 	{
-		long double num;
+		Value* memory;
 		Operator op;
+		Value value;
 	};
 };
 

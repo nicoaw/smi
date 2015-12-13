@@ -1,1 +1,0 @@
-/home/nico/Projects/CPP/SMI/CMakeFiles/smi.dir
