@@ -23,35 +23,36 @@ Value Interpreter::evaluate(const std::vector<Token>& postfixExpression)
 					switch(token.op)
 					{
 						case Operator::Asterix:
-							operandValue(operands.top()) *= operandValue(right);
+							operands.top().value *= right.value;
 							break;
 						case Operator::Caret:
-							operandValue(operands.top()) = std::pow(operandValue(operands.top()), operandValue(right));
+							operands.top().value = std::pow(operands.top().value, right.value);
 							break;
 						case Operator::Equals:
-							*operands.top().memory = operandValue(right);
+							*operands.top().memory = right.value;
+							operands.top().value = right.value;
 							break;
 						case Operator::Exclamation:
-							operandValue(right) = factorial(operandValue(right));
+							right.value = factorial(right.value);
 							operands.push(right);
 							break;
 						case Operator::Minus:
 							if(operands.empty())
 							{
-								operandValue(right) *= -1;
+								right.value *= -1;
 								operands.push(right);
 							}
 							else
-								operandValue(operands.top()) -= operandValue(right);
+								operands.top().value -= right.value;
 							break;
 						case Operator::Percent:
-							operandValue(operands.top()) = std::fmod(operandValue(operands.top()), operandValue(right));
+							operands.top().value = std::fmod(operands.top().value, right.value);
 							break;
 						case Operator::Plus:
-							operandValue(operands.top()) += operandValue(right);
+							operands.top().value += right.value;
 							break;
 						case Operator::Slash:
-							operandValue(operands.top()) /= operandValue(right);
+							operands.top().value /= right.value;
 							break;
 						default: assert(false); break;
 					}
@@ -60,7 +61,7 @@ Value Interpreter::evaluate(const std::vector<Token>& postfixExpression)
 		}						
 	}
 
-	return operands.empty() ? 0 : operandValue(operands.top());
+	return operands.empty() ? 0 : operands.top().value;
 }
 
 unsigned long long Interpreter::factorial(unsigned long long n)
@@ -82,69 +83,89 @@ Value Interpreter::interpret(std::istream& is)
 	return evaluate(expression);
 }
 
-const Value& Interpreter::operandValue(const Token& operand)
-{
-	return operand.type == Token::Type::Memory ? *operand.memory : operand.value;
-}
-
-Value& Interpreter::operandValue(Token& operand)
-{
-	return operand.type == Token::Type::Memory ? *operand.memory : operand.value;
-}
-
 void Interpreter::parse(std::istream& is, std::vector<Token>& expression)
 {
-	char c;
-	while(is && (c = is.get()) != '\n')
+	while(is)
 	{
 		Token token{Token::Type::Operator, {}};
 
-		switch(c)
+		switch(is.peek())
 		{
-			case '*': token.op = Operator::Asterix; break;
-			case '^': token.op = Operator::Caret; break;
-			case '=': token.op = Operator::Equals; break;
-			case '!': token.op = Operator::Exclamation; break;
-			case '(': token.op = Operator::LeftParenthesis; break;
-			case '%': token.op = Operator::Percent; break;
-			case '+': token.op = Operator::Plus; break;
-			case ')': token.op = Operator::RightParenthesis; break;
-			case '/': token.op = Operator::Slash; break;
-					  // Only extract minus as an operator if it is used for subtraction
+			case '*':
+				token.op = Operator::Asterix;
+				is.get();
+				break;
+			case '^':
+				token.op = Operator::Caret;
+				is.get();
+				break;
+			case '=':
+				token.op = Operator::Equals;
+				is.get();
+				break;
+			case '!':
+				token.op = Operator::Exclamation;
+				is.get();
+				break;
+			case '(':
+				token.op = Operator::LeftParenthesis;
+				is.get();
+				break;
+			case '%':
+				token.op = Operator::Percent;
+				is.get();
+				break;
+			case '+':
+				token.op = Operator::Plus;
+				is.get();
+				break;
+			case ')':
+				token.op = Operator::RightParenthesis;
+				is.get();
+				break;
+			case '/':
+				token.op = Operator::Slash;
+				is.get();
+				break;
+				// Only extract minus as an operator if it is used for subtraction
 			case '-':
-					  if(expression.empty() || expression.back().type == Token::Type::Value || expression.back().type == Token::Type::Memory || expression.back().op == Operator::RightParenthesis)
-						  token.op = Operator::Minus;
-					  break;
-					  // Ignore spaces
+				if(expression.empty() || expression.back().type == Token::Type::Value || expression.back().type == Token::Type::Memory || expression.back().op == Operator::RightParenthesis)
+				{
+					token.op = Operator::Minus;
+					is.get();
+				}
+				break;
+				// Ignore spaces
 			case ' ':
 			case '\t':
-					  continue;
+				is.get();
+				continue;
+			case '\n':
+				is.get();
+				return;
 			default:
-					  // Token is a name
-					  if(std::isalpha(c))
-					  {
-						  std::string name;
+				// Token is a name
+				if(std::isalpha(is.peek()))
+				{
+					std::string name;
 
-						  // Get name
-						  name.push_back(c);
-						  do
-							  name.push_back(is.get());
-						  while(std::isalnum(is.peek()) || is.peek() == '_');
+					// Get name
+					while(std::isalnum(is.peek()) || is.peek() == '_')
+						name.push_back(is.get());
 
-						  token.type = Token::Type::Memory;
-						  token.memory = &memory[name];
-					  }
-					  else
-					  {
-						  is.unget();
-
-						  // Token is a number
-						  if(is >> token.value)
-							  token.type = Token::Type::Value;
-						  else
-							  assert(false);
-					  }
-					  break;
+					token.type = Token::Type::Memory;
+					token.memory = &memory[name];
+					token.value = *token.memory;
+				}
+				else
+				{
+					// Token is a number
+					if(is >> token.value)
+						token.type = Token::Type::Value;
+					else
+						assert(false);
+				}
+				break;
 		}
 
 		if(is) expression.push_back(token);

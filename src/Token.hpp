@@ -6,7 +6,6 @@ enum class Operator
 	// Order determines precedence
 	LeftParenthesis,
 	RightParenthesis,
-	Equals,
 	Exclamation,
 	Caret,
 	Asterix,
@@ -14,6 +13,7 @@ enum class Operator
 	Percent,
 	Plus,
 	Minus,
+	Equals,
 };
 
 using Value = long double;
@@ -28,12 +28,16 @@ struct Token
 	};
 
 	Type type;
-	
+
 	union
 	{
-		Value* memory;
+		struct
+		{
+			Value* memory;
+			Value value;
+		};
+
 		Operator op;
-		Value value;
 	};
 };
 
