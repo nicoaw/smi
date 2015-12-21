@@ -1,19 +1,21 @@
-#include "Expression.hpp"
+#include "Interpreter.hpp"
+#include <fstream>
+#include <iomanip>
 #include <iterator>
 #include <limits>
 #include <sstream>
 
-void interpret(std::istream& is);
-
-int main(int argc, char* argv[])
+int main(int, char**)
 {
-	if(argc == 1)
-		while(true)
-			interpret(std::cin);
-	else
-		std::cout << "Usage: " << argv[0] << std::endl;
-}	
+	Interpreter interpreter;
 
+	while(true)
+	{
+		std::cout << ">> ";
+		std::cout << interpreter.interpret(std::cin) << std::endl;
+	}
+}	
+/*
 void interpret(std::istream& is)
 {
 	std::cout << ">> ";
@@ -32,3 +34,4 @@ void interpret(std::istream& is)
 		std::cout << evaluate(expression) << std::endl;
 	}
 }
+*/
