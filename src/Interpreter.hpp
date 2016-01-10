@@ -1,21 +1,22 @@
 #ifndef INTERPRETER_HPP
 #define INTERPRETER_HPP
 
-#include "Token.hpp"
 #include <iostream>
-#include <map>
-#include <vector>
+#include <stack>
+#include <unordered_map>
 
 class Interpreter
 {
 	public:
-		Value interpret(std::istream& is);
+		Interpreter();
+		double interpret(std::istream& is);
+		void setGlobalValue(const std::string& name, double value);
 	private:
-		Value evaluate(const std::vector<Token>& postfixExpression);
-		static unsigned long long factorial(unsigned long long n);
-		void parse(std::istream& is, std::vector<Token>& expression);
-		static void postfix(std::vector<Token>& expression);
-		std::map<std::string, Value> memory;
+		double exponent(std::istream& is);
+		double factor(std::istream& is);
+		double operand(std::istream& is);
+		double term(std::istream& is);
+		std::stack<std::unordered_map<std::string, double>> storage;
 };
 
 #endif /* INTERPRETER_HPP */
