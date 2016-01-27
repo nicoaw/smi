@@ -125,7 +125,16 @@ double Interpreter::operand(std::istream& is)
 
 					auto constantPosition = constants.find(name);
 					if(constantPosition != constants.end())
+					{
+						if(nowspeek(is) == '=')
+						{
+							std::string ignore;
+							std::getline(is, ignore);
+							throw 1;
+						}
+
 						return constantPosition->second;
+					}
 
 					switch(nowspeek(is))
 					{
@@ -193,7 +202,15 @@ int main(int, char**)
 	{
 		std::cout << ">> ";
 		std::cout.flush();
-		std::cout << interp.interpret(std::cin) << std::endl;
+
+		try
+		{
+			std::cout << interp.interpret(std::cin) << std::endl;
+		}
+		catch(...)
+		{
+			std::cout << "Error" << std::endl;
+		}
 	}
 #endif /* DEBUG */
 
