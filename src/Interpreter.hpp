@@ -4,6 +4,7 @@
 #include <iostream>
 #include <stack>
 #include <unordered_map>
+#include <vector>
 
 class Interpreter
 {
@@ -16,7 +17,7 @@ class Interpreter
 		double factor(std::istream& is);
 		double operand(std::istream& is);
 		double term(std::istream& is);
-		std::stack<std::unordered_map<std::string, double>> storage;
+		std::unordered_map<std::string, double> storage;
 };
 
 #endif /* INTERPRETER_HPP */

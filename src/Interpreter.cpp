@@ -3,10 +3,10 @@
 #include <sstream>
 
 int factorial(int n);
+double sgn(double x);
 
 Interpreter::Interpreter()
 {
-	storage.emplace();
 }
 
 double Interpreter::exponent(std::istream& is)
@@ -60,6 +60,41 @@ double Interpreter::interpret(std::istream& is)
 
 double Interpreter::operand(std::istream& is)
 {
+	static const std::unordered_map<std::string, double(*)(double)> functions
+	{
+		{"abs", std::fabs},
+		{"acos", std::acos},
+		{"acosh", std::acosh},
+		{"asin", std::asin},
+		{"asinh", std::asinh},
+		{"atan", std::atan},
+		{"atanh", std::atanh},
+		{"ceil", std::ceil},
+		{"cos", std::cos},
+		{"cosh", std::cosh},
+		{"exp", std::exp},
+		{"floor", std::floor},
+		{"log", std::log},
+		{"log10", std::log10},
+		{"log2", std::log2},
+		{"round", std::round},
+		{"sgn", sgn},
+		{"sin", std::sin},
+		{"sinh", std::sinh},
+		{"sqrt", std::sqrt},
+		{"tan", std::tan},
+		{"tanh", std::tanh},
+		{"trunc", std::trunc},
+	};
+
+	static const std::unordered_map<std::string, double> constants
+	{
+		{"e", M_E},
+		{"inf", INFINITY},
+		{"nan", NAN},
+		{"pi", M_PI},
+	};
+
 	switch(is.peek())
 	{
 		case '-':
@@ -83,16 +118,22 @@ double Interpreter::operand(std::istream& is)
 				
 				if(!name.empty())
 				{
-					double& value = storage.top()[name];
+					auto functionPosition = functions.find(name);
+					if(functionPosition != functions.end())
+						return functionPosition->second(term(is));
 
-					// Global variable assignment
-					if(is.peek() == '=')
+					auto constantPosition = constants.find(name);
+					if(constantPosition != constants.end())
+						return constantPosition->second;
+
+					switch(is.peek())
 					{
-						is.get();
-						value = term(is);
+						case '=':
+							is.get();
+							return storage[name] = term(is);
+						default:
+							return storage[name];
 					}
-
-					return value;
 				}
 				else
 				{
@@ -111,7 +152,7 @@ double Interpreter::operand(std::istream& is)
 
 void Interpreter::setGlobalValue(const std::string& name, double value)
 {
-	storage.top()[name] = value;
+	storage[name] = value;
 }
 
 double Interpreter::term(std::istream& is)
@@ -137,12 +178,56 @@ double Interpreter::term(std::istream& is)
 }
 
 double testInterpreter(Interpreter& interp, const std::string& expression);
+void performTests();
 
 int main(int, char**)
 {
+
+#ifdef DEBUG
+	performTests();
+#else
 	Interpreter interp;
-	interp.setGlobalValue("pi", M_PI);
-	interp.setGlobalValue("e", M_E);
+
+	while(true)
+	{
+		std::cout << ">> ";
+		std::cout.flush();
+		std::cout << interp.interpret(std::cin) << std::endl;
+	}
+#endif /* DEBUG */
+
+	return 0;
+}
+
+int factorial(int n)
+{
+	if(n < 0)
+		throw 1;
+	else if(n == 0)
+		return 1;
+	else
+		return n * factorial(n - 1);
+}
+
+double sgn(double x)
+{
+	if(x < 0)
+		return -1;
+	else if(x > 0)
+		return 1;
+	else
+		return 0;
+}
+
+double testInterpreter(Interpreter& interp, const std::string& expression)
+{
+	std::istringstream iss{expression};
+	return interp.interpret(iss);
+}
+
+void performTests()
+{
+	Interpreter interp;
 
 	double h;
 
@@ -168,6 +253,10 @@ int main(int, char**)
 		{h*8+3, "h*8+3"},
 		{h=-(8+M_PI)/4, "h=-(8+pi)/4"},
 		{h, "h"},
+		{std::sin(45), "sin 45"},
+		{std::sin(45*3), "sin(45*3)"},
+		{std::trunc(45.3), "trunc 45.3"},
+		{-std::ceil(45.333), "-ceil 45.333"},
 	};
 
 	std::size_t numTests = 0, numTestPassed = 0;
@@ -189,31 +278,4 @@ int main(int, char**)
 	}
 
 	std::cout << "Tests " << numTests << ", passed " << numTestPassed << std::endl;
-
-/*
-	while(true)
-	{
-		std::cout << ">> ";
-		std::cout.flush();
-		std::cout << interp.interpret(std::cin) << std::endl;
-	}
-	*/
-
-	return 0;
-}
-
-int factorial(int n)
-{
-	if(n < 0)
-		throw 1;
-	else if(n == 0)
-		return 1;
-	else
-		return n * factorial(n - 1);
-}
-
-double testInterpreter(Interpreter& interp, const std::string& expression)
-{
-	std::istringstream iss{expression};
-	return interp.interpret(iss);
 }
