@@ -3,6 +3,7 @@
 #include <sstream>
 
 int factorial(int n);
+int nowspeek(std::istream& is);
 double sgn(double x);
 
 Interpreter::Interpreter()
@@ -14,7 +15,7 @@ double Interpreter::exponent(std::istream& is)
 	double left = operand(is);
 
 	while(true)
-		switch(is.peek())
+		switch(nowspeek(is))
 		{
 			case '^':
 				is.get();
@@ -34,7 +35,7 @@ double Interpreter::factor(std::istream& is)
 	double left = exponent(is);
 
 	while(true)
-		switch(is.peek())
+		switch(nowspeek(is))
 		{
 			case '*':
 				is.get();
@@ -95,7 +96,7 @@ double Interpreter::operand(std::istream& is)
 		{"pi", M_PI},
 	};
 
-	switch(is.peek())
+	switch(nowspeek(is))
 	{
 		case '-':
 			is.get();
@@ -113,20 +114,20 @@ double Interpreter::operand(std::istream& is)
 		default:
 			{
 				std::string name;
-				while(std::isalpha(is.peek()))
+				while(std::isalpha(nowspeek(is)))
 					name += (char) is.get();
 				
 				if(!name.empty())
 				{
 					auto functionPosition = functions.find(name);
 					if(functionPosition != functions.end())
-						return functionPosition->second(term(is));
+						return functionPosition->second(operand(is));
 
 					auto constantPosition = constants.find(name);
 					if(constantPosition != constants.end())
 						return constantPosition->second;
 
-					switch(is.peek())
+					switch(nowspeek(is))
 					{
 						case '=':
 							is.get();
@@ -160,7 +161,7 @@ double Interpreter::term(std::istream& is)
 	double left = factor(is);
 
 	while(true)
-		switch(is.peek())
+		switch(nowspeek(is))
 		{
 			case '+':
 				is.get();
@@ -207,6 +208,14 @@ int factorial(int n)
 		return 1;
 	else
 		return n * factorial(n - 1);
+}
+
+int nowspeek(std::istream& is)
+{
+	while(is.peek() == ' ')
+		is.get();
+
+	return is.peek();
 }
 
 double sgn(double x)
