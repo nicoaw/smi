@@ -114,8 +114,9 @@ double Interpreter::operand(std::istream& is)
 		default:
 			{
 				std::string name;
-				while(std::isalpha(nowspeek(is)))
-					name += (char) is.get();
+				if(std::isalpha(nowspeek(is)))
+					while(std::isalpha(nowspeek(is)) || std::isalnum(nowspeek(is)))
+						name += (char) is.get();
 				
 				if(!name.empty())
 				{
