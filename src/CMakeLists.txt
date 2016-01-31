@@ -5,9 +5,7 @@ list(APPEND CMAKE_CXX_FLAGS "-std=c++1y -g")
 
 set(SMI_SOURCES
 	Interpreter.hpp
-	Interpreter.cpp
-	main.cpp
-	Token.hpp)
+	Interpreter.cpp)
 
 add_executable(smi ${SMI_SOURCES})
 install(TARGETS smi DESTINATION bin)

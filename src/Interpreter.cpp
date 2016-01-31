@@ -1,220 +1,308 @@
 #include "Interpreter.hpp"
-#include <cassert>
 #include <cmath>
-#include <stack>
+#include <sstream>
 
-Value Interpreter::evaluate(const std::vector<Token>& postfixExpression)
+int factorial(int n);
+int nowspeek(std::istream& is);
+double sgn(double x);
+
+Interpreter::Interpreter()
 {
-	std::stack<Token> operands; 
+}
 
-	for(const Token& token : postfixExpression)
-	{
-		switch(token.type)
+double Interpreter::exponent(std::istream& is)
+{
+	double left = operand(is);
+
+	while(true)
+		switch(nowspeek(is))
 		{
-			case Token::Type::Memory:
-			case Token::Type::Value:
-				operands.push(token);
-				break;
-			case Token::Type::Operator:
-				{
-					Token right = operands.top();
-					operands.pop();
-
-					switch(token.op)
-					{
-						case Operator::Asterix:
-							operands.top().value *= right.value;
-							break;
-						case Operator::Caret:
-							operands.top().value = std::pow(operands.top().value, right.value);
-							break;
-						case Operator::Equals:
-							*operands.top().memory = right.value;
-							operands.top().value = right.value;
-							break;
-						case Operator::Exclamation:
-							right.value = factorial(right.value);
-							operands.push(right);
-							break;
-						case Operator::Minus:
-							if(operands.empty())
-							{
-								right.value *= -1;
-								operands.push(right);
-							}
-							else
-								operands.top().value -= right.value;
-							break;
-						case Operator::Percent:
-							operands.top().value = std::fmod(operands.top().value, right.value);
-							break;
-						case Operator::Plus:
-							operands.top().value += right.value;
-							break;
-						case Operator::Slash:
-							operands.top().value /= right.value;
-							break;
-						default: assert(false); break;
-					}
-				}
-				break;
-		}						
-	}
-
-	return operands.empty() ? 0 : operands.top().value;
-}
-
-unsigned long long Interpreter::factorial(unsigned long long n)
-{
-	unsigned long long result{n};
-	while(n > 1)
-		result *= --n;
-	return result;
-}
-
-Value Interpreter::interpret(std::istream& is)
-{
-	std::vector<Token> expression;
-
-	// Get expression in postfix notation
-	parse(is, expression);
-	postfix(expression);
-
-	return evaluate(expression);
-}
-
-void Interpreter::parse(std::istream& is, std::vector<Token>& expression)
-{
-	while(is)
-	{
-		Token token{Token::Type::Operator, {}};
-
-		switch(is.peek())
-		{
-			case '*':
-				token.op = Operator::Asterix;
-				is.get();
-				break;
 			case '^':
-				token.op = Operator::Caret;
 				is.get();
-				break;
-			case '=':
-				token.op = Operator::Equals;
-				is.get();
+				left = std::pow(left, operand(is));
 				break;
 			case '!':
-				token.op = Operator::Exclamation;
 				is.get();
+				left = factorial(left);
 				break;
-			case '(':
-				token.op = Operator::LeftParenthesis;
+			default:
+				return left;
+		}
+}
+
+double Interpreter::factor(std::istream& is)
+{
+	double left = exponent(is);
+
+	while(true)
+		switch(nowspeek(is))
+		{
+			case '*':
 				is.get();
-				break;
-			case '%':
-				token.op = Operator::Percent;
-				is.get();
-				break;
-			case '+':
-				token.op = Operator::Plus;
-				is.get();
-				break;
-			case ')':
-				token.op = Operator::RightParenthesis;
-				is.get();
+				left *= exponent(is);
 				break;
 			case '/':
-				token.op = Operator::Slash;
 				is.get();
+				left /= exponent(is);
 				break;
-				// Only extract minus as an operator if it is used for subtraction
-			case '-':
-				if(expression.empty() || expression.back().type == Token::Type::Value || expression.back().type == Token::Type::Memory || expression.back().op == Operator::RightParenthesis)
-				{
-					token.op = Operator::Minus;
-					is.get();
-				}
-				break;
-				// Ignore spaces
-			case ' ':
-			case '\t':
-				is.get();
-				continue;
-			case '\n':
-				is.get();
-				return;
 			default:
-				// Token is a name
-				if(std::isalpha(is.peek()))
+				return left;
+		}
+
+	throw 1;
+}
+
+double Interpreter::interpret(std::istream& is)
+{
+	double value = term(is);
+	is.ignore();
+	return value;
+}
+
+double Interpreter::operand(std::istream& is)
+{
+	static const std::unordered_map<std::string, double(*)(double)> functions
+	{
+		{"abs", std::fabs},
+		{"acos", std::acos},
+		{"acosh", std::acosh},
+		{"asin", std::asin},
+		{"asinh", std::asinh},
+		{"atan", std::atan},
+		{"atanh", std::atanh},
+		{"ceil", std::ceil},
+		{"cos", std::cos},
+		{"cosh", std::cosh},
+		{"exp", std::exp},
+		{"floor", std::floor},
+		{"log", std::log},
+		{"log10", std::log10},
+		{"log2", std::log2},
+		{"round", std::round},
+		{"sgn", sgn},
+		{"sin", std::sin},
+		{"sinh", std::sinh},
+		{"sqrt", std::sqrt},
+		{"tan", std::tan},
+		{"tanh", std::tanh},
+		{"trunc", std::trunc},
+	};
+
+	static const std::unordered_map<std::string, double> constants
+	{
+		{"e", M_E},
+		{"inf", INFINITY},
+		{"nan", NAN},
+		{"pi", M_PI},
+	};
+
+	switch(nowspeek(is))
+	{
+		case '-':
+			is.get();
+			return -operand(is);
+		case '(':
+			{
+				is.get();
+
+				double value = term(is);
+				if(is.get() == ')')
+					return value;
+
+				break;
+			}
+		default:
+			{
+				std::string name;
+				if(std::isalpha(nowspeek(is)))
+					while(std::isalpha(nowspeek(is)) || std::isalnum(nowspeek(is)))
+						name += (char) is.get();
+				
+				if(!name.empty())
 				{
-					std::string name;
+					auto functionPosition = functions.find(name);
+					if(functionPosition != functions.end())
+						return functionPosition->second(operand(is));
 
-					// Get name
-					while(std::isalnum(is.peek()) || is.peek() == '_')
-						name.push_back(is.get());
+					auto constantPosition = constants.find(name);
+					if(constantPosition != constants.end())
+					{
+						if(nowspeek(is) == '=')
+						{
+							std::string ignore;
+							std::getline(is, ignore);
+							throw 1;
+						}
 
-					token.type = Token::Type::Memory;
-					token.memory = &memory[name];
-					token.value = *token.memory;
+						return constantPosition->second;
+					}
+
+					switch(nowspeek(is))
+					{
+						case '=':
+							is.get();
+							return storage[name] = term(is);
+						default:
+							return storage[name];
+					}
 				}
 				else
 				{
-					// Token is a number
-					if(is >> token.value)
-						token.type = Token::Type::Value;
-					else
-						assert(false);
-				}
-				break;
-		}
+					double value;
 
-		if(is) expression.push_back(token);
+					if(is >> value)
+						return value;
+				}
+
+				break;
+			}
 	}
+
+	throw 1;
 }
 
-void Interpreter::postfix(std::vector<Token>& expression)
+void Interpreter::setGlobalValue(const std::string& name, double value)
 {
-	std::stack<Token> operators;
-	auto result = expression.begin();
+	storage[name] = value;
+}
 
-	auto popOperator = [&operators]()
-	{
-		Token temporary = operators.top();
-		operators.pop();
-		return temporary;
-	};
+double Interpreter::term(std::istream& is)
+{
+	double left = factor(is);
 
-	for(const Token& token : expression)
-	{	
-		switch(token.type)
+	while(true)
+		switch(nowspeek(is))
 		{
-			case Token::Type::Memory:
-			case Token::Type::Value:
-				*(result++) = token;
+			case '+':
+				is.get();
+				left += factor(is);
 				break;
-			case Token::Type::Operator:
-				switch(token.op)
-				{
-					case Operator::RightParenthesis:
-						// Push operators untill a left parenthesis
-						while(operators.top().op != Operator::LeftParenthesis)
-							*(result++) = popOperator();
-						operators.pop();
-						break;
-					default:
-						// Push operators untill there is no more, opertor is a left parenthesis, or operator is lower precedence compared to the current token
-						while(!operators.empty() && operators.top().op != Operator::LeftParenthesis && token.op >= operators.top().op)
-							*(result++) = popOperator();
-						operators.push(token);
-						break;
-				}
+			case '-':
+				is.get();
+				left -= factor(is);
 				break;
+			default:
+				return left;
+		}
+
+	throw 1;
+}
+
+double testInterpreter(Interpreter& interp, const std::string& expression);
+void performTests();
+
+int main(int, char**)
+{
+
+#ifdef DEBUG
+	performTests();
+#else
+	Interpreter interp;
+
+	while(true)
+	{
+		std::cout << ">> ";
+		std::cout.flush();
+
+		try
+		{
+			std::cout << interp.interpret(std::cin) << std::endl;
+		}
+		catch(...)
+		{
+			std::cout << "Error" << std::endl;
 		}
 	}
+#endif /* DEBUG */
 
-	// Push the rest of the operators
-	while(!operators.empty())
-		*(result++) = popOperator();
-	// Remove any excess space because parenthesis are skipped
-	expression.erase(result, expression.end());
+	return 0;
+}
+
+int factorial(int n)
+{
+	if(n < 0)
+		throw 1;
+	else if(n == 0)
+		return 1;
+	else
+		return n * factorial(n - 1);
+}
+
+int nowspeek(std::istream& is)
+{
+	while(is.peek() == ' ')
+		is.get();
+
+	return is.peek();
+}
+
+double sgn(double x)
+{
+	if(x < 0)
+		return -1;
+	else if(x > 0)
+		return 1;
+	else
+		return 0;
+}
+
+double testInterpreter(Interpreter& interp, const std::string& expression)
+{
+	std::istringstream iss{expression};
+	return interp.interpret(iss);
+}
+
+void performTests()
+{
+	Interpreter interp;
+
+	double h;
+
+	std::pair<double, std::string> tests[] =
+	{
+		{2+3, "2+3"},
+		{-4*5, "-4*5"},
+		{2+-4, "2+-4"},
+		{5*3+4, "5*3+4"},
+		{5+3*4, "5+3*4"},
+		{(5+3)*4, "(5+3)*4"},
+		{-(5+3)*4, "-(5+3)*4"},
+		{5*-(6*(9+3)+4), "5*-(6*(9+3)+4)"},
+		{6-8/3e4, "6-8/3e4"},
+		{3*std::pow(4,5)-6, "3*4^5-6"},
+		{7*factorial(6)+3, "7*6!+3"},
+		{factorial(2*3+3), "(2*3+3)!"},
+		{std::pow(4+7*8,9+4), "(4+7*8)^(9+4)"},
+		{std::pow(3, std::pow(2, 4)), "3^(2^4)"},
+		{M_PI*(3-9), "pi*(3-9)"},
+		{(-M_E+4)*8, "(-e+4)*8"},
+		{h=99, "h=99"},
+		{h*8+3, "h*8+3"},
+		{h=-(8+M_PI)/4, "h=-(8+pi)/4"},
+		{h, "h"},
+		{std::sin(45), "sin 45"},
+		{std::sin(45*3), "sin(45*3)"},
+		{std::trunc(45.3), "trunc 45.3"},
+		{-std::ceil(45.333), "-ceil 45.333"},
+	};
+
+	std::size_t numTests = 0, numTestPassed = 0;
+
+	for(const auto& test: tests)
+	{
+		double cpp = test.first, smi = testInterpreter(interp, test.second);
+	
+		std::cout
+			<< test.second << std::endl
+			<< "  C++ " << cpp << std::endl
+			<< "  smi " << smi << std::endl
+			<< "  " << (cpp == smi ? "PASSED" : "MAYBE FAILED")  << std::endl
+			<< std::endl
+			;
+
+		++numTests;
+		numTestPassed += (cpp == smi ? 1 : 0);
+	}
+
+	std::cout << "Tests " << numTests << ", passed " << numTestPassed << std::endl;
 }
