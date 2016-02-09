@@ -1,5 +1,7 @@
 #include "Interpreter.hpp"
 #include <cmath>
+#include <limits>
+#include <iomanip>
 #include <sstream>
 #include <readline/history.h>
 #include <readline/readline.h>
@@ -212,11 +214,9 @@ int main(int, char**)
 		{
 			std::stringstream iss{line};
 
-			add_history(line.c_str());
-
 			try
 			{
-				std::cout << interp.interpret(iss) << std::endl;
+				std::cout << std::setprecision(std::numeric_limits<double>::max_digits10) << interp.interpret(iss) << std::endl;
 			}
 			catch(...)
 			{
@@ -260,9 +260,17 @@ double sgn(double x)
 std::string readLine(const std::string& prompt)
 {
 	char* data = readline(prompt.c_str());
-	std::string line{data};
-	free(data);
-	return line;
+
+	if(data)
+	{
+		std::string line{data};
+		add_history(data);
+		free(data);
+		return line;
+	}
+	else
+		std::cout << "quit" << std::endl;
+		exit(0);
 }
 
 double testInterpreter(Interpreter& interp, const std::string& expression)
