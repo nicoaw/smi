@@ -1,1 +1,0 @@
-/usr/bin/c++    -std=c++1y   CMakeFiles/smi.dir/main.cpp.o CMakeFiles/smi.dir/Token.cpp.o CMakeFiles/smi.dir/Interpreter.cpp.o  -o smi -rdynamic 
