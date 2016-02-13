@@ -1,6 +1,10 @@
 #include "Interpreter.hpp"
 #include <cmath>
+#include <limits>
+#include <iomanip>
 #include <sstream>
+#include <readline/history.h>
+#include <readline/readline.h>
 
 int factorial(int n);
 int nowspeek(std::istream& is);
@@ -188,6 +192,7 @@ double Interpreter::term(std::istream& is)
 	throw 1;
 }
 
+std::string readLine(const std::string& prompt);
 double testInterpreter(Interpreter& interp, const std::string& expression);
 void performTests();
 
@@ -201,16 +206,22 @@ int main(int, char**)
 
 	while(true)
 	{
-		std::cout << ">> ";
-		std::cout.flush();
+		std::string line = readLine(">> ");
 
-		try
+		if(line == "quit")
+			return 0;
+		else if(!line.empty())
 		{
-			std::cout << interp.interpret(std::cin) << std::endl;
-		}
-		catch(...)
-		{
-			std::cout << "Error" << std::endl;
+			std::stringstream iss{line};
+
+			try
+			{
+				std::cout << std::setprecision(std::numeric_limits<double>::max_digits10) << interp.interpret(iss) << std::endl;
+			}
+			catch(...)
+			{
+				std::cout << "Error" << std::endl;
+			}
 		}
 	}
 #endif /* DEBUG */
@@ -244,6 +255,22 @@ double sgn(double x)
 		return 1;
 	else
 		return 0;
+}
+
+std::string readLine(const std::string& prompt)
+{
+	char* data = readline(prompt.c_str());
+
+	if(data)
+	{
+		std::string line{data};
+		add_history(data);
+		free(data);
+		return line;
+	}
+	else
+		std::cout << "quit" << std::endl;
+		exit(0);
 }
 
 double testInterpreter(Interpreter& interp, const std::string& expression)
